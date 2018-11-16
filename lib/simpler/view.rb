@@ -1,4 +1,6 @@
 require 'erb'
+require_relative 'view/formats'
+require 'byebug'
 
 module Simpler
   class View
@@ -10,8 +12,9 @@ module Simpler
     end
 
     def render(binding)
-      template = File.read(template_path)
+      return send(format_render.keys[0], format_render.values[0]) unless format_render.blank?
 
+      template = File.read(template_path)
       ERB.new(template).result(binding)
     end
 
@@ -27,6 +30,10 @@ module Simpler
 
     def template
       @env['simpler.template']
+    end
+
+    def format_render
+      @env['simpler.format_render']
     end
 
     def template_path

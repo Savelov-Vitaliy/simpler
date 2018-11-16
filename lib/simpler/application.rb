@@ -28,8 +28,13 @@ module Simpler
 
     def call(env)
       route = @router.route_for(env)
-      controller = route.controller.new(env)
-      action = route.action
+
+      begin
+        controller = route.controller.new(env)
+        action = route.action
+      rescue NoMethodError
+        return response_404
+      end
 
       make_response(controller, action)
     end
@@ -52,6 +57,10 @@ module Simpler
 
     def make_response(controller, action)
       controller.make_response(action)
+    end
+
+    def response_404
+      [404, {'Content-Type' => 'text/html'}, ["Page not found"]]
     end
 
   end

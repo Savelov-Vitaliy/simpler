@@ -1,14 +1,19 @@
 require_relative 'view'
+require_relative 'controller/headers'
 
 module Simpler
   class Controller
 
-    attr_reader :name, :request, :response
+    attr_reader :name, :request, :response, :headers, :params
 
     def initialize(env)
       @name = extract_name
       @request = Rack::Request.new(env)
       @response = Rack::Response.new
+      @headers = Headers.new(@response)
+
+      id = env['PATH_INFO'].match(/\d.*$/)
+      @params = { id: id.to_s } if id
     end
 
     def make_response(action)
@@ -42,13 +47,15 @@ module Simpler
       View.new(@request.env).render(binding)
     end
 
-    def params
-      @request.params
+    def render(template = nil, **format_render)
+      @request.env['simpler.template'] = template
+      @request.env['simpler.format_render'] = format_render
     end
 
-    def render(template)
-      @request.env['simpler.template'] = template
+    def status(response_status)
+      @response.status = response_status
     end
+
 
   end
 end
