@@ -1,6 +1,5 @@
 require 'erb'
 require_relative 'view/formats'
-require 'byebug'
 
 module Simpler
   class View
@@ -18,6 +17,11 @@ module Simpler
       ERB.new(template).result(binding)
     end
 
+    def template
+      path = template_render || [controller.name, action].join('/')
+      "#{path}.html.erb"
+    end
+
     private
 
     def controller
@@ -28,8 +32,8 @@ module Simpler
       @env['simpler.action']
     end
 
-    def template
-      @env['simpler.template']
+    def template_render
+      @env['simpler.template_render']
     end
 
     def format_render
@@ -37,9 +41,7 @@ module Simpler
     end
 
     def template_path
-      path = template || [controller.name, action].join('/')
-
-      Simpler.root.join(VIEW_BASE_PATH, "#{path}.html.erb")
+      Simpler.root.join(VIEW_BASE_PATH, template)
     end
 
   end
