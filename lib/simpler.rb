@@ -4,6 +4,7 @@ require_relative 'simpler/application'
 module Simpler
 
   class << self
+
     def application
       Application.instance
     end
@@ -15,8 +16,3 @@ module Simpler
 
 end
 
-class Object
-  def blank?
-    respond_to?(:empty?) ? empty? : !self
-  end
-end

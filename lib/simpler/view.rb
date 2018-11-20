@@ -4,6 +4,8 @@ require_relative 'view/formats'
 module Simpler
   class View
 
+    using ObjectExtensions
+
     VIEW_BASE_PATH = 'app/views'.freeze
 
     def initialize(env)
@@ -45,4 +47,9 @@ module Simpler
     end
 
   end
+
+
 end
+
+
+

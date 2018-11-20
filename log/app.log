@@ -1,4 +1,0 @@
-I, [2018-11-17T23:28:30.289246 #9690]  INFO -- : Request: GET /tests?category=Backend
-I, [2018-11-17T23:28:30.290722 #9690]  INFO -- : Handler: TestsController#index
-I, [2018-11-17T23:28:30.293877 #9690]  INFO -- : Parameters: {"category"=>"Backend"}
-I, [2018-11-17T23:28:30.295514 #9690]  INFO -- : Response: 200 [text/html] tests/index.html.erb

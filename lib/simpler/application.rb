@@ -28,13 +28,11 @@ module Simpler
 
     def call(env)
       route = @router.route_for(env)
+      return response_404 unless route
 
-      begin
-        controller = route.controller.new(env)
-        action = route.action
-      rescue NoMethodError
-        return response_404
-      end
+      controller = route.controller.new(env)
+      controller.params.update( route.params(env) )
+      action = route.action
 
       make_response(controller, action)
     end
