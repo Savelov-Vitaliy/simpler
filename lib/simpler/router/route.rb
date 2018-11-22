@@ -17,8 +17,8 @@ module Simpler
       def params(env)
         request = Rack::Request.new(env)
 
-        route_path_parts = @path.split('/').reject(&:empty?)
-        env_path_parts = request.env['PATH_INFO'].split('/').reject(&:empty?)
+        route_path_parts = path_parts(@path)
+        env_path_parts = path_parts(request.env['PATH_INFO'])
 
         route_path_parts.each_with_index.with_object({}) do |route_path_part_and_index, params|
           part  = route_path_part_and_index[0]
