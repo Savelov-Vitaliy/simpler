@@ -1,7 +1,6 @@
 module Simpler
   class Router
     class Route
-
       attr_reader :controller, :action
 
       def initialize(method, path, controller, action)
@@ -9,7 +8,6 @@ module Simpler
         @path = path
         @controller = controller
         @action = action
-        @params_indexes = params_indexes
       end
 
       def match?(method, path)
@@ -18,31 +16,41 @@ module Simpler
 
       def params(env)
         request = Rack::Request.new(env)
-        get_params = request.env['PATH_INFO'].split('/')
-        set_params = @path.split('/')
 
-        set_params.each.with_object({}){|p, h|  h[p[1..-1].to_sym] = get_params[set_params.index(p)] if p[0] == ':'}
+        route_path_parts = @path.split('/').reject(&:empty?)
+        env_path_parts = request.env['PATH_INFO'].split('/').reject(&:empty?)
+
+        route_path_parts.each_with_index.with_object({}) do |route_path_part_and_index, params|
+          part  = route_path_part_and_index[0]
+          index = route_path_part_and_index[1]
+
+          params[part[1..-1].to_sym] = env_path_parts[index] if part[0] == ':'
+        end
       end
 
       private
 
+      def path_parts(path)
+        path.split('?')[0].split('/').reject(&:empty?)
+      end
+
       def path_match?(path)
-        get = path.split('/')
-        set = @path.split('/')
-        params = @params_indexes.values
+        route_path_parts = path_parts(@path)
+        get_path_parts = path_parts(path)
 
-        reject_params(set) == reject_params(get) and not get[params.last].nil?
+        # количество частей обоих путей должно быть одинаковым (части разделенны "/")
+        return false unless route_path_parts.size == get_path_parts.size
+
+        # если есть хотя бы одна часть пути маршрута, которая:
+        # 1) не параметр (т.е. не начитается с ":")
+        # и при этом
+        # 2) не равна аналогичной части переданного пути (с тем же индексом)
+        # то этот маршрут не подходит: return false
+        route_path_parts.each_with_index do |part, index|
+          return false unless part[0] == ':' || get_path_parts[index] == part
+        end
+        true
       end
-
-      def reject_params(path_array)
-        path_array.reject { |item| @params_indexes.values.include? path_array.index(item) }
-      end
-
-      def params_indexes
-        route_params = @path.split('/')
-        route_params.each.with_object({}){|k, h| h[k[1..-1].to_sym] = route_params.index(k) if k[0] == ':'}
-      end
-
     end
   end
 end

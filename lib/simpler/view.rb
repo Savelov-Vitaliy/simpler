@@ -3,7 +3,6 @@ require_relative 'view/formats'
 
 module Simpler
   class View
-
     using ObjectExtensions
 
     VIEW_BASE_PATH = 'app/views'.freeze
@@ -45,11 +44,5 @@ module Simpler
     def template_path
       Simpler.root.join(VIEW_BASE_PATH, template)
     end
-
   end
-
-
 end
-
-
-

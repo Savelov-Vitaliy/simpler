@@ -6,7 +6,6 @@ require_relative 'controller'
 
 module Simpler
   class Application
-
     include Singleton
 
     attr_reader :db
@@ -31,7 +30,7 @@ module Simpler
       return response_404 unless route
 
       controller = route.controller.new(env)
-      controller.params.update( route.params(env) )
+      controller.params.update(route.params(env))
       action = route.action
 
       make_response(controller, action)
@@ -58,8 +57,7 @@ module Simpler
     end
 
     def response_404
-      [404, {'Content-Type' => 'text/html'}, ["Page not found"]]
+      [404, { 'Content-Type' => 'text/html' }, ['Page not found']]
     end
-
   end
 end
