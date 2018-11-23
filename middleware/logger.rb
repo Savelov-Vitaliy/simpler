@@ -18,6 +18,7 @@ class AppLogger
   private
 
   def to_log(env, status, headers)
+    response = Rack::Response.new(env)
     request = Rack::Request.new(env)
     controller = env['simpler.controller']
 

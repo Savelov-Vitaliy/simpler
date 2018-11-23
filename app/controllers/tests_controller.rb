@@ -1,6 +1,6 @@
 class TestsController < Simpler::Controller
   def index
-    headers['Content-Type'] = 'text/plain'
+    # headers['Content-Type'] = 'text/plain'
   end
 
   def create

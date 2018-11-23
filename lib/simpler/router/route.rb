@@ -3,6 +3,8 @@ module Simpler
     class Route
       attr_reader :controller, :action
 
+      MATCH_REGEXP = %r{(?<=\/)(:.+?)(?=\/|$)}.freeze
+
       def initialize(method, path, controller, action)
         @method = method
         @path = path
@@ -15,16 +17,10 @@ module Simpler
       end
 
       def params(env)
-        request = Rack::Request.new(env)
+        path = Rack::Request.new(env).env['PATH_INFO']
 
-        route_path_parts = path_parts(@path)
-        env_path_parts = path_parts(request.env['PATH_INFO'])
-
-        route_path_parts.each_with_index.with_object({}) do |route_path_part_and_index, params|
-          part  = route_path_part_and_index[0]
-          index = route_path_part_and_index[1]
-
-          params[part[1..-1].to_sym] = env_path_parts[index] if part[0] == ':'
+        path_parts(@path).each.with_index.with_object({}) do |(part, index), params|
+          params[part[1..-1].to_sym] = path_parts(path)[index] if part[0] == ':'
         end
       end
 
@@ -35,22 +31,28 @@ module Simpler
       end
 
       def path_match?(path)
-        route_path_parts = path_parts(@path)
-        get_path_parts = path_parts(path)
-
-        # количество частей обоих путей должно быть одинаковым (части разделенны "/")
-        return false unless route_path_parts.size == get_path_parts.size
-
-        # если есть хотя бы одна часть пути маршрута, которая:
-        # 1) не параметр (т.е. не начитается с ":")
-        # и при этом
-        # 2) не равна аналогичной части переданного пути (с тем же индексом)
-        # то этот маршрут не подходит: return false
-        route_path_parts.each_with_index do |part, index|
-          return false unless part[0] == ':' || get_path_parts[index] == part
-        end
-        true
+        path.match(@path.gsub(MATCH_REGEXP) { '.+' }) && path_parts(path).size == path_parts(@path).size
       end
+
+      #       # альтернативный (старый) вариант
+      #
+      #       def path_match?(path)
+      #         route_path_parts = path_parts(@path)
+      #         get_path_parts = path_parts(path)
+      #
+      #         # количество частей обоих путей должно быть одинаковым (части разделенны "/")
+      #         return false unless route_path_parts.size == get_path_parts.size
+      #
+      #         # если есть хотя бы одна часть пути маршрута, которая:
+      #         # 1) не параметр (т.е. не начитается с ":")
+      #         # и при этом
+      #         # 2) не равна аналогичной части переданного пути (с тем же индексом)
+      #         # то этот маршрут не подходит: return false
+      #         route_path_parts.each_with_index do |part, index|
+      #           return false unless part[0] == ':' || get_path_parts[index] == part
+      #         end
+      #         true
+      #       end
     end
   end
 end

@@ -30,7 +30,6 @@ module Simpler
       return response_404 unless route
 
       controller = route.controller.new(env)
-      controller.params.update(route.params(env))
       action = route.action
 
       make_response(controller, action)
