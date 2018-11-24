@@ -3,8 +3,6 @@ module Simpler
     class Route
       attr_reader :controller, :action
 
-      MATCH_REGEXP = %r{(?<=\/)(:.+?)(?=\/|$)}.freeze
-
       def initialize(method, path, controller, action)
         @method = method
         @path = path
@@ -17,7 +15,7 @@ module Simpler
       end
 
       def params(env)
-        path = Rack::Request.new(env).env['PATH_INFO']
+        path = Rack::Request.new(env).path_info
 
         path_parts(@path).each.with_index.with_object({}) do |(part, index), params|
           params[part[1..-1].to_sym] = path_parts(path)[index] if part[0] == ':'
@@ -31,9 +29,21 @@ module Simpler
       end
 
       def path_match?(path)
-        path.match(@path.gsub(MATCH_REGEXP) { '.+' }) && path_parts(path).size == path_parts(@path).size
+        path.match(pattern) && path_parts(path).size == path_parts(@path).size
       end
 
+      def pattern
+        path_parts(@path).map { |part| part[0] == ':' ? '.+' : part }.join('/')
+      end
+
+      #      # еще один рабочий вариант
+      #
+      #      MATCH_REGEXP = %r{(?<=\/)(:.+?)(?=\/|$)}.freeze
+      #
+      #      def path_match?(path)
+      #        path.match(@path.gsub(MATCH_REGEXP) { '.+' }) && path_parts(path).size == path_parts(@path).size
+      #      end
+      #
       #       # альтернативный (старый) вариант
       #
       #       def path_match?(path)

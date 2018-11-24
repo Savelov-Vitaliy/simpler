@@ -5,13 +5,12 @@ module Simpler
   class Controller
     using ObjectExtensions
 
-    attr_reader :name, :request, :response, :headers
+    attr_reader :name, :request, :response
 
     def initialize(env)
       @name = extract_name
       @request = Rack::Request.new(env)
       @response = Rack::Response.new
-      @headers = {}
     end
 
     def make_response(action)
@@ -19,15 +18,19 @@ module Simpler
       @request.env['simpler.action'] = action
       @request.env['simpler.template'] = View.new(@request.env).template
 
-      send(action)
       set_default_headers
+      send(action)
       write_response
 
       @response.finish
     end
 
     def params
-      request_params.merge @request.env['simpler.route'].params(@request.env)
+      request_params.merge @request.env['simpler.route.params']
+    end
+
+    def headers
+      @response
     end
 
     private
@@ -41,17 +44,12 @@ module Simpler
     end
 
     def set_default_headers
-      set_header('Content-Type', 'text/html')
-    end
-
-    def set_header(name, value)
-      @response.headers[name] = value
+      headers['Content-Type'] = 'text/html'
     end
 
     def write_response
       body = render_body
 
-      @headers.each { |header, value| set_header(header, value) }
       @response.write(body)
     end
 
@@ -62,7 +60,7 @@ module Simpler
     def render(template = nil, **format_render)
       @request.env['simpler.template_render'] = template
       @request.env['simpler.format_render'] = format_render
-      set_header('Content-Type', "text/#{format_render}") unless format_render.blank?
+      headers['Content-Type'] = "text/#{format_render}" unless format_render.blank?
     end
 
     def status(response_status)
