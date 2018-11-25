@@ -18,7 +18,9 @@ module Simpler
       method = env['REQUEST_METHOD'].downcase.to_sym
       path = env['PATH_INFO']
 
-      @routes.find { |route| env['simpler.route.params'] = route.params(env) if route.match?(method, path) }
+      @routes.find { |route| route.match?(method, path) }.tap do |result|
+        env['simpler.route.params'] = Hash(result&.params(env))
+      end
     end
 
     private
