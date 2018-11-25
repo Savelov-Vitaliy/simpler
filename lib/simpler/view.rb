@@ -1,7 +1,9 @@
 require 'erb'
+require_relative 'view/formats'
 
 module Simpler
   class View
+    using ObjectExtensions
 
     VIEW_BASE_PATH = 'app/views'.freeze
 
@@ -10,9 +12,15 @@ module Simpler
     end
 
     def render(binding)
-      template = File.read(template_path)
+      return send(format_render.keys[0], format_render.values[0]) unless format_render.blank?
 
+      template = File.read(template_path)
       ERB.new(template).result(binding)
+    end
+
+    def template
+      path = template_render || [controller.name, action].join('/')
+      "#{path}.html.erb"
     end
 
     private
@@ -25,15 +33,16 @@ module Simpler
       @env['simpler.action']
     end
 
-    def template
-      @env['simpler.template']
+    def template_render
+      @env['simpler.template_render']
+    end
+
+    def format_render
+      @env['simpler.format_render']
     end
 
     def template_path
-      path = template || [controller.name, action].join('/')
-
-      Simpler.root.join(VIEW_BASE_PATH, "#{path}.html.erb")
+      Simpler.root.join(VIEW_BASE_PATH, template)
     end
-
   end
 end
